@@ -11,8 +11,8 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     const std::wstring class_name = L"MediaPlayerClassicW";
     const std::wstring player = L"C:\\Program Files\\MPC-HC\\mpc-hc64.exe";
-    std::wstring movie = L"D:\\Download\\The.Divergent.Series.Allegiant.Part.1.2016.1080p.WEB-DL.x264.AC3-JYK\\The.Divergent.Series.Allegiant.Part.1.2016.1080p.WEB-DL.x264.AC3-JYK.mkv";
-    std::wstring subtitle = L"D:\\Download\\The.Divergent.Series.Allegiant.Part.1.2016.1080p.WEB-DL.x264.AC3-JYK\\The.Divergent.Series.Allegiant.Part.1.2016.1080p.WEB-DL.x264.AC3-JYK.简英.srt";
+    std::wstring movie = L"C:\\Temp\\Cinderella 2015 72OP HDTC H264 AC3 MURD3R.avi";
+    std::wstring subtitle = L"C:\\Temp\\灰姑娘Cinderella.简体&英文.srt";
 
     if ( argc == 3 )
     {
@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     std::wstringstream movie_strm;
-    movie_strm << "\"" << movie << "\" /open";
+    movie_strm << "\"" << movie << "\" /open /sub \"" << subtitle << "\"";
 
     HWND shell_handle = NULL;
 
@@ -33,10 +33,20 @@ int _tmain(int argc, _TCHAR* argv[])
         0,
         SW_SHOWNOACTIVATE );
 
-    Sleep( 1000 );
-
     std::wstring window_name = boost::filesystem::path( movie ).filename().wstring();
-    HWND hwnd = FindWindow( class_name.c_str(), window_name.c_str() );
+    HWND hwnd = NULL;
+
+    for ( size_t i = 0; i < 500; ++i )
+    {
+        hwnd = FindWindow( class_name.c_str(), window_name.c_str() );
+
+        if ( hwnd != NULL )
+        {
+            break;
+        }
+
+        Sleep( 10 );
+    }
 
     if ( hwnd == NULL )
     {
@@ -44,6 +54,7 @@ int _tmain(int argc, _TCHAR* argv[])
         CloseHandle( shell_handle );
         return 0;
     }
+
 
     Utility::SrtSubtitleParser parser( subtitle );
 
@@ -53,6 +64,30 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         SetForegroundWindow( hwnd );
         Utility::send_input_ctrl( 'G' );
+
+        {
+            std::wstring class_name = L"#32770";
+            std::wstring window_name = L"转到...";
+
+            for ( size_t i = 0; i < 100; ++i )
+            {
+                HWND hwnd = FindWindow( class_name.c_str(), window_name.c_str() );
+
+                if ( hwnd != NULL )
+                { 
+                    ShowWindow( hwnd, SW_HIDE );
+                    break;
+                }
+
+                Sleep( 1 );
+            }
+
+            if ( hwnd == NULL )
+            {
+                std::cout << "can not fine window" << std::endl;
+            }
+        }
+
         Utility::SrtSubtitle& sub = subtitles[i];
         stdcout << sub.text2 << "\n" << sub.text << "\n";
 
